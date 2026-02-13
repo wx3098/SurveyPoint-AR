@@ -18,28 +18,78 @@
     </a-scene>
 
     <script>
-        // Pythonからデータを取ってくる
-        fetch('/api/points')
-            .then(response => response.json())
-            .then(points => {
-                const scene = document.querySelector('a-scene');
+        const scene = document.querySelector('a-scene');
 
-                points.forEach(p => {
-                    // 各座標に「ピン」を作成
-                    const entity = document.createElement('a-text');
-                    entity.setAttribute('value', p.name);
-                    entity.setAttribute('scale', '15 15 15');
-                    entity.setAttribute('look-at', '[gps-camera]');
-                    entity.setAttribute('align', 'center');
-                    entity.setAttribute('color', 'orange');
-                    
-                    // 緯度・経度を設定
-                    entity.setAttribute('gps-entity-place', `latitude: ${p.lat}; longitude: ${p.lon};`);
+    // 1. テスト用：あなたの目の前（座標そのまま）にオレンジの柱を立てる
+    const testPin = document.createElement('a-box');
+    testPin.setAttribute('material', 'color: orange; opacity: 0.8');
+    testPin.setAttribute('scale', '2 20 2'); // 縦に長い柱（見つけやすくするため）
+    testPin.setAttribute('gps-entity-place', 'latitude: 31.4169717; longitude: 131.0044544;');
+    scene.appendChild(testPin);
 
-                    scene.appendChild(entity);
-                });
-                console.log("ARピンの配置完了:", points.length, "地点");
+    const testText = document.createElement('a-text');
+    testText.setAttribute('value', 'TEST POINT HERE');
+    testText.setAttribute('look-at', '[gps-camera]');
+    testText.setAttribute('scale', '20 20 20');
+    testText.setAttribute('align', 'center');
+    testText.setAttribute('gps-entity-place', 'latitude: 31.4169717; longitude: 131.0044544;');
+    testText.setAttribute('position', '0 10 0'); // 柱の上に表示
+    scene.appendChild(testText);
+
+    // 2. SIMAファイルからのデータも読み込む（距離計算付き）
+    fetch('/api/points')
+        .then(response => response.json())
+        .then(points => {
+            points.forEach(p => {
+                const entity = document.createElement('a-text');
+                entity.setAttribute('value', p.name);
+                entity.setAttribute('scale', '15 15 15');
+                entity.setAttribute('look-at', '[gps-camera]');
+                entity.setAttribute('color', 'yellow');
+                entity.setAttribute('gps-entity-place', `latitude: ${p.lat}; longitude: ${p.lon};`);
+                scene.appendChild(entity);
             });
+            console.log("SIMAデータ読み込み完了");
+        });
+     // 距離を計算する関数（緯度経度からメートルを出す）
+    // function calculateDistance(lat1, lon1, lat2, lon2) {
+    //     const R = 6371000; // 地球の半径(m)
+    //     const dLat = (lat2 - lat1) * Math.PI / 180;
+    //     const dLon = (lon2 - lon1) * Math.PI / 180;
+    //     const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    //             Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    //             Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    //     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    //     return R * c;
+    // }
+
+    // // データ取得と表示
+    // fetch('/api/points')
+    //     .then(response => response.json())
+    //     .then(points => {
+    //         const scene = document.querySelector('a-scene');
+
+    //         // 現在地を取得（一度だけ距離を計算するために使う）
+    //         navigator.geolocation.getCurrentPosition(position => {
+    //             const userLat = position.coords.latitude;
+    //             const userLon = position.coords.longitude;
+
+    //             points.forEach(p => {
+    //                 const distance = calculateDistance(userLat, userLon, p.lat, p.lon);
+                    
+    //                 const entity = document.createElement('a-text');
+    //                 // 点名と距離を表示（例：点2530 [15.2m]）
+    //                 entity.setAttribute('value', `${p.name} [${distance.toFixed(1)}m]`);
+    //                 entity.setAttribute('scale', '15 15 15');
+    //                 entity.setAttribute('look-at', '[gps-camera]');
+    //                 entity.setAttribute('align', 'center');
+    //                 entity.setAttribute('color', 'orange');
+    //                 entity.setAttribute('gps-entity-place', `latitude: ${p.lat}; longitude: ${p.lon};`);
+
+    //                 scene.appendChild(entity);
+    //             });
+    //         });
+    //     });
     </script>
 </body>
 </html>
